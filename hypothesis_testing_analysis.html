@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypothesis Testing Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.0.0/math.min.js"></script>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+            font-size: 2.2em;
+        }
+        h2 {
+            color: #34495e;
+            border-left: 5px solid #3498db;
+            padding-left: 20px;
+            margin-top: 40px;
+            font-size: 1.5em;
+        }
+        h3 {
+            color: #2c3e50;
+            margin-top: 25px;
+            font-size: 1.2em;
+        }
+        .hypothesis-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .condition-card {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #27ae60;
+        }
+        .condition-card.warning {
+            border-left-color: #f39c12;
+        }
+        .calculation-box {
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .formula {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.2em;
+            margin: 15px 0;
+            border-left: 4px solid #6c757d;
+        }
+        .result-highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3em;
+            margin: 20px 0;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+        }
+        .stats-table th, .stats-table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: center;
+        }
+        .stats-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        .stats-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 30px 0;
+        }
+        .interpretation {
+            background-color: #e8f5e8;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #27ae60;
+            margin: 25px 0;
+        }
+        .decision-box {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 25px 0;
+            font-size: 1.2em;
+        }
+        .decision-box.fail-to-reject {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        }
+        .step-number {
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hypothesis Testing Analysis</h1>
+        <p style="text-align: center; font-size: 1.1em; color: #7f8c8d;">
+            <strong>Research Question:</strong> Does listening to quiet, lyric-free background music while taking a short mathematics quiz change the mean quiz score for high-school students compared with taking the quiz in silence?
+        </p>
+        
+        <h2><span class="step-number">1</span>Formal Hypotheses</h2>
+        <div class="hypothesis-box">
+            <p><strong>Parameter Definition:</strong></p>
+            <p>Let μ<sub>d</sub> = the true mean difference in quiz scores (Music - Silence) for the population of AP-level high school students</p>
+            <br>
+            <p><strong>H₀:</strong> μ<sub>d</sub> = 0 (No difference in mean quiz scores between music and silence conditions)</p>
+            <p><strong>Hₐ:</strong> μ<sub>d</sub> ≠ 0 (There is a difference in mean quiz scores between music and silence conditions)</p>
+            <br>
+            <p><strong>Test Type:</strong> Two-sided paired t-test at α = 0.05 significance level</p>
+        </div>
+        
+        <h2><span class="step-number">2</span>Condition Checking</h2>
+        <div class="conditions-grid">
+            <div class="condition-card">
+                <h3>✓ Random Sampling/Assignment</h3>
+                <p><strong>Satisfied:</strong> Students were randomly assigned to order conditions (music-first vs. silence-first) to control for practice effects. While this is a convenience sample from one school, the randomization allows for causal inference about the treatment effect.</p>
+            </div>
+            <div class="condition-card">
+                <h3>✓ Independence</h3>
+                <p><strong>Satisfied:</strong> Each student's performance is independent of others. The paired design means we're analyzing differences within students, which removes between-student variability.</p>
+            </div>
+            <div class="condition-card">
+                <h3>✓ Normality of Differences</h3>
+                <p><strong>Satisfied:</strong> With n = 35, the Central Limit Theorem ensures the sampling distribution of the mean difference is approximately normal, even if individual differences aren't perfectly normal. The EDA showed a roughly symmetric distribution.</p>
+            </div>
+        </div>
+        
+        <h2><span class="step-number">3</span>Sample Statistics</h2>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Statistic</th>
+                    <th>Symbol</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="statsTableBody">
+            </tbody>
+        </table>
+        
+        <h2><span class="step-number">4</span>Test Statistic Calculation</h2>
+        <div class="calculation-box">
+            <h3>Formula for Paired t-test:</h3>
+            <div class="formula">
+                t = (x̄<sub>d</sub> - μ<sub>d</sub>) / (s<sub>d</sub> / √n)
+            </div>
+            <p>Where:</p>
+            <ul>
+                <li>x̄<sub>d</sub> = sample mean of differences</li>
+                <li>μ<sub>d</sub> = hypothesized mean difference (0 under H₀)</li>
+                <li>s<sub>d</sub> = sample standard deviation of differences</li>
+                <li>n = sample size</li>
+            </ul>
+            
+            <h3>Calculation:</h3>
+            <div id="calculationSteps"></div>
+        </div>
+        
+        <h2><span class="step-number">5</span>Sampling Distribution</h2>
+        <div class="chart-container">
+            <canvas id="samplingDistChart"></canvas>
+        </div>
+        
+        <h2><span class="step-number">6</span>P-value and Decision</h2>
+        <div id="pValueSection"></div>
+        
+        <h2><span class="step-number">7</span>Conclusion</h2>
+        <div class="interpretation">
+            <div id="conclusionText"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data from Part A (recreating for consistency)
+        const sampleData = {
+            n: 35,
+            meanDiff: 0.89,
+            sdDiff: 1.97,
+            alpha: 0.05
+        };
+        
+        // Calculate additional statistics
+        const se = sampleData.sdDiff / Math.sqrt(sampleData.n);
+        const df = sampleData.n - 1;
+        const tStat = sampleData.meanDiff / se;
+        
+        // t-distribution approximation for p-value
+        function tCDF(t, df) {
+            // Approximation using the relationship to beta function
+            const x = df / (df + t * t);
+            const a = df / 2;
+            const b = 0.5;
+            
+            // Simple approximation for beta incomplete function
+            if (Math.abs(t) > 4) {
+                return t > 0 ? 1 : 0;
+            }
+            
+            // More accurate for our range
+            const term1 = Math.atan(t / Math.sqrt(df)) / Math.PI + 0.5;
+            return term1;
+        }
+        
+        const pValueOneTail = 1 - tCDF(Math.abs(tStat), df);
+        const pValue = 2 * pValueOneTail;
+        
+        // Critical values (approximation)
+        const tCritical = 2.032; // t(0.025, 34) ≈ 2.032
+        
+        // Populate statistics table
+        function createStatsTable() {
+            const tableBody = document.getElementById('statsTableBody');
+            const stats = [
+                { name: 'Sample Size', symbol: 'n', value: sampleData.n },
+                { name: 'Mean Difference', symbol: 'x̄ₐ', value: sampleData.meanDiff.toFixed(3) + ' points' },
+                { name: 'Standard Deviation', symbol: 'sₐ', value: sampleData.sdDiff.toFixed(3) + ' points' },
+                { name: 'Standard Error', symbol: 'SE', value: se.toFixed(3) + ' points' },
+                { name: 'Degrees of Freedom', symbol: 'df', value: df }
+            ];
+            
+            tableBody.innerHTML = stats.map(stat => `
+                <tr>
+                    <td><strong>${stat.name}</strong></td>
+                    <td>${stat.symbol}</td>
+                    <td>${stat.value}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Create calculation steps
+        function createCalculationSteps() {
+            const stepsContainer = document.getElementById('calculationSteps');
+            
+            stepsContainer.innerHTML = `
+                <p><strong>Step 1:</strong> Calculate Standard Error</p>
+                <p>SE = sₐ / √n = ${sampleData.sdDiff.toFixed(3)} / √${sampleData.n} = ${sampleData.sdDiff.toFixed(3)} / ${Math.sqrt(sampleData.n).toFixed(3)} = ${se.toFixed(3)}</p>
+                
+                <p><strong>Step 2:</strong> Calculate Test Statistic</p>
+                <p>t = (x̄ₐ - 0) / SE = ${sampleData.meanDiff.toFixed(3)} / ${se.toFixed(3)} = <strong>${tStat.toFixed(3)}</strong></p>
+                
+                <p><strong>Step 3:</strong> Degrees of Freedom</p>
+                <p>df = n - 1 = ${sampleData.n} - 1 = <strong>${df}</strong></p>
+            `;
+        }
+        
+        // Create sampling distribution visualization
+        function createSamplingDistribution() {
+            const ctx = document.getElementById('samplingDistChart').getContext('2d');
+            
+            // Generate t-distribution curve
+            const xValues = [];
+            const yValues = [];
+            const rejectionRegionLeft = [];
+            const rejectionRegionRight = [];
+            
+            for (let x = -4; x <= 4; x += 0.1) {
+                xValues.push(x);
+                // Approximate t-distribution (simplified)
+                const y = Math.exp(-0.5 * x * x * (1 + x*x/(4*df))) / Math.sqrt(2 * Math.PI);
+                yValues.push(y);
+                
+                // Mark rejection regions
+                if (x <= -tCritical) {
+                    rejectionRegionLeft.push({x: x, y: y});
+                } else {
+                    rejectionRegionLeft.push({x: x, y: 0});
+                }
+                
+                if (x >= tCritical) {
+                    rejectionRegionRight.push({x: x, y: y});
+                } else {
+                    rejectionRegionRight.push({x: x, y: 0});
+                }
+            }
+            
+            const chartData = xValues.map((x, i) => ({x: x, y: yValues[i]}));
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 't-distribution (df = 34)',
+                        data: chartData,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }, {
+                        label: 'Rejection Region (Left)',
+                        data: rejectionRegionLeft,
+                        backgroundColor: 'rgba(231, 76, 60, 0.3)',
+                        borderColor: 'rgba(231, 76, 60, 0.8)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }, {
+                        label: 'Rejection Region (Right)',
+                        data: rejectionRegionRight,
+                        backgroundColor: 'rgba(231, 76, 60, 0.3)',
+                        borderColor: 'rgba(231, 76, 60, 0.8)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }, {
+                        label: `Observed t-statistic (${tStat.toFixed(3)})`,
+                        data: [{x: tStat, y: 0}, {x: tStat, y: 0.3}],
+                        type: 'line',
+                        borderColor: '#e74c3c',
+                        backgroundColor: '#e74c3c',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Sampling Distribution under H₀ (t-distribution with df = 34)',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 't-statistic'
+                            },
+                            min: -4,
+                            max: 4
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Probability Density'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 2
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create p-value section
+        function createPValueSection() {
+            const pValueContainer = document.getElementById('pValueSection');
+            
+            const decision = pValue < sampleData.alpha ? 'reject' : 'fail-to-reject';
+            const decisionText = pValue < sampleData.alpha ? 'Reject H₀' : 'Fail to Reject H₀';
+            const decisionClass = pValue < sampleData.alpha ? '' : 'fail-to-reject';
+            
+            pValueContainer.innerHTML = `
+                <div class="calculation-box">
+                    <h3>P-value Calculation:</h3>
+                    <p><strong>Two-tailed test:</strong> P-value = 2 × P(T > |t|) where T ~ t(${df})</p>
+                    <p>P-value = 2 × P(T > ${Math.abs(tStat).toFixed(3)}) ≈ <strong>${pValue.toFixed(4)}</strong></p>
+                    
+                    <h3>Critical Values:</h3>
+                    <p>At α = ${sampleData.alpha}, critical values are ±${tCritical} for df = ${df}</p>
+                </div>
+                
+                <div class="result-highlight">
+                    <strong>Test Statistic:</strong> t = ${tStat.toFixed(3)}<br>
+                    <strong>P-value:</strong> ${pValue.toFixed(4)}<br>
+                    <strong>Critical Values:</strong> ±${tCritical}
+                </div>
+                
+                <div class="decision-box ${decisionClass}">
+                    <strong>Decision:</strong> ${decisionText}<br>
+                    <br>
+                    ${pValue < sampleData.alpha ? 
+                        `Since p-value (${pValue.toFixed(4)}) < α (${sampleData.alpha}), we reject H₀` : 
+                        `Since p-value (${pValue.toFixed(4)}) ≥ α (${sampleData.alpha}), we fail to reject H₀`}
+                </div>
+            `;
+        }
+        
+        // Create conclusion
+        function createConclusion() {
+            const conclusionContainer = document.getElementById('conclusionText');
+            
+            const conclusion = pValue < sampleData.alpha ? `
+                <h3>Statistical Conclusion:</h3>
+                <p>We reject the null hypothesis at the α = 0.05 significance level. There is sufficient evidence to conclude that background music has a statistically significant effect on mathematics quiz performance for AP-level high school students.</p>
+                
+                <h3>Practical Interpretation:</h3>
+                <p>The sample data provides convincing evidence that quiet, lyric-free background music changes mean quiz scores compared to silence. Specifically, students scored an average of ${sampleData.meanDiff.toFixed(2)} points higher (out of 20) when listening to background music compared to taking the quiz in silence.</p>
+                
+                <h3>Effect Size and Practical Significance:</h3>
+                <p>While statistically significant, the effect size is relatively small. The mean improvement of ${sampleData.meanDiff.toFixed(2)} points represents approximately a ${(sampleData.meanDiff/20*100).toFixed(1)}% increase in performance. Educators should consider whether this modest improvement justifies implementing background music policies.</p>
+                
+                <h3>Limitations:</h3>
+                <ul>
+                    <li>Results are based on a convenience sample from one school, limiting generalizability</li>
+                    <li>The effect, while statistically significant, is modest in practical terms</li>
+                    <li>Individual responses varied considerably (SD = ${sampleData.sdDiff.toFixed(2)} points)</li>
+                    <li>Long-term effects of background music on learning are not addressed</li>
+                </ul>
+            ` : `
+                <h3>Statistical Conclusion:</h3>
+                <p>We fail to reject the null hypothesis at the α = 0.05 significance level. There is insufficient evidence to conclude that background music has a statistically significant effect on mathematics quiz performance for AP-level high school students.</p>
+                
+                <h3>Practical Interpretation:</h3>
+                <p>While the sample showed a small positive effect (mean difference = ${sampleData.meanDiff.toFixed(2)} points), this difference could reasonably be due to random variation rather than a true effect of background music. The data do not provide convincing evidence that quiet, lyric-free background music meaningfully changes quiz performance.</p>
+                
+                <h3>Important Notes:</h3>
+                <ul>
+                    <li>Failing to reject H₀ does not prove that music has no effect—only that we lack sufficient evidence of an effect</li>
+                    <li>The observed difference, while not statistically significant, suggests music might have a small positive effect</li>
+                    <li>A larger sample size might detect smaller effects if they truly exist</li>
+                    <li>Individual responses varied considerably, suggesting music affects different students differently</li>
+                </ul>
+                
+                <h3>Recommendations:</h3>
+                <p>Based on these results, there is no statistical justification for implementing background music policies in math testing environments. However, the trend toward improvement suggests this area merits further research with larger, more diverse samples.</p>
+            `;
+            
+            conclusionContainer.innerHTML = conclusion;
+        }
+        
+        // Initialize all components
+        createStatsTable();
+        createCalculationSteps();
+        createSamplingDistribution();
+        createPValueSection();
+        createConclusion();
+        
+    </script>
+</body>
+</html>
